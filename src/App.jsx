@@ -36,12 +36,20 @@ axios.get("http://localhost:3000/students")
   console.log(err)
 setMsg("Coś poszło nie tak z /students")})
 }, [])
-  const addStudent = () => {
-    if (!name || !email) return;
-    setStudents([...students, { id: Date.now(), name, email }]);
+ const addStudent = () => {
+  if (!name || !email) return;
+
+  axios.post("http://localhost:3000/students", {
+    name,
+    email
+  })
+  .then(res => {
+    setStudents([...students, res.data]);
     setName("");
     setEmail("");
-  };
+  })
+  .catch(err => console.log(err));
+};
 
   const deleteStudent = (id) => {
     setStudents(students.filter((s) => s.id !== id));
@@ -112,7 +120,7 @@ setMsg("Coś poszło nie tak z /students")})
             <tbody>
               {students.map((s) => (
                 <tr key={s.id}>
-                  <td>{s.name}</td>
+                  <td>{s.full_name}</td>
                   <td>{s.email}</td>
                   <td className="text-end">
                     <button
