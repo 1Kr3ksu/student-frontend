@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
+  
   const [students, setStudents] = useState([
-    { id: 1, name: "Jan Kowalski", email: "jan@example.com" },
-    { id: 2, name: "Anna Nowak", email: "anna@example.com" },
+
   ]);
 
   const [courses] = useState([
@@ -14,7 +15,27 @@ function App() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+const [msg , setMsg] =useState("");
+useEffect(() => {
+axios.get("http://localhost:3000/")
+.then(res => setMsg(res.data.message) 
+)
+.catch(err => {
+  
+  console.log(err)
+setMsg("Coś poszło nie tak")})
+}, [])
 
+
+useEffect(() => {
+axios.get("http://localhost:3000/students")
+.then(res => setStudents(res.data) 
+)
+.catch(err => {
+  
+  console.log(err)
+setMsg("Coś poszło nie tak z /students")})
+}, [])
   const addStudent = () => {
     if (!name || !email) return;
     setStudents([...students, { id: Date.now(), name, email }]);
@@ -33,7 +54,9 @@ function App() {
         minHeight: "100vh",
         padding: "20px",
       }}
+    
     >
+        {msg}
       <div className="container py-4">
         <h1 className="mb-4 fw-bold text-dark">SRMS Dashboard</h1>
 
