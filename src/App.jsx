@@ -4,10 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   const [students, setStudents] = useState([]);
-  const [courses] = useState([
-    { id: 1, name: "Matematyka", code: "MATH101" },
-    { id: 2, name: "Informatyka", code: "CS102" },
-  ]);
+  const [courses, setCourses] = useState([]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
