@@ -1,13 +1,9 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
-  
-  const [students, setStudents] = useState([
-
-  ]);
-
+  const [students, setStudents] = useState([]);
   const [courses] = useState([
     { id: 1, name: "Matematyka", code: "MATH101" },
     { id: 2, name: "Informatyka", code: "CS102" },
@@ -15,56 +11,71 @@ function App() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-const [msg , setMsg] =useState("");
-useEffect(() => {
-axios.get("http://localhost:3000/")
-.then(res => setMsg(res.data.message) 
-)
-.catch(err => {
-  
-  console.log(err)
-setMsg("Coś poszło nie tak")})
-}, [])
+  const [msg, setMsg] = useState("");
 
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/")
+      .then((res) => setMsg(res.data.message ?? res.data.msg ?? ""))
+      .catch(() => setMsg("Coś poszło nie tak"));
+  }, []);
 
-useEffect(() => {
-axios.get("http://localhost:3000/students")
-.then(res => setStudents(res.data) 
-)
-.catch(err => {
-  
-  console.log(err)
-setMsg("Coś poszło nie tak z /students")})
-}, [])
- const addStudent = () => {
-  if (!name || !email) return;
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/students")
+      .then((res) => {
+        const normalized = (res.data || []).map((s) => ({
+          id: s.id ?? s.ID ?? s.insertId ?? null,
+          full_name: s.full_name ?? s.name ?? "",
+          email: s.email ?? "",
+        }));
+        console.log(normalized)
+        setStudents(normalized);
+      })
+      .catch(() => setMsg("Coś poszło nie tak z /students"));
+  }, []);
 
-  axios.post("http://localhost:3000/students", {
-    name,
-    email
-  })
-  .then(res => {
-    setStudents([...students, res.data]);
-    setName("");
-    setEmail("");
-  })
-  .catch(err => console.log(err));
-};
+  const addStudent = () => {
+    if (!name || !email) return;
+
+    axios
+      .post("http://localhost:3000/students", { name, email })
+      .then((res) => {
+        const created = {
+          id: res.data.id ?? res.data.insertId ?? null,
+          full_name: res.data.full_name ?? res.data.name ?? name,
+          email: res.data.email ?? email,
+        };
+        setStudents((prev) => [...prev, created]);
+        setName("");
+        setEmail("");
+      })
+      .catch(() => setMsg("Błąd przy dodawaniu studenta"));
+  };
 
   const deleteStudent = (id) => {
-    setStudents(students.filter((s) => s.id !== id));
+    if (!id) {
+      setMsg("Brak id studenta — upewnij się, że backend zwraca id w GET/POST");
+      return;
+    }
+    if (!window.confirm("Usuń studenta?")) return;
+
+    axios
+      .delete(`http://localhost:3000/students/${id}`)
+      .then(() => setStudents((prev) => prev.filter((s) => s.id !== id)))
+      .catch(() => setMsg("Błąd przy usuwaniu studenta"));
   };
 
   return (
     <div
       style={{
-        background: "linear-gradient(to bottom right, #fef08a, #fdba74, #f87171)",
+        background:
+          "linear-gradient(to bottom right, #fef08a, #fdba74, #f87171)",
         minHeight: "100vh",
         padding: "20px",
       }}
-    
     >
-        {msg}
+      {msg}
       <div className="container py-4">
         <h1 className="mb-4 fw-bold text-dark">SRMS Dashboard</h1>
 
@@ -118,9 +129,11 @@ setMsg("Coś poszło nie tak z /students")})
               </tr>
             </thead>
             <tbody>
-              {students.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.full_name}</td>
+              {students.map((s, i) =>{
+                console.log(s.id)
+                return (
+                <tr key={s.id ?? i}>
+                  <td>{s.full_name ?? s.name}</td>
                   <td>{s.email}</td>
                   <td className="text-end">
                     <button
@@ -132,7 +145,9 @@ setMsg("Coś poszło nie tak z /students")})
                     </button>
                   </td>
                 </tr>
-              ))}
+              )
+              } 
+              )}
             </tbody>
           </table>
         </div>
@@ -171,7 +186,6 @@ setMsg("Coś poszło nie tak z /students")})
         {/* ENROLLMENTS */}
         <div className="mb-5">
           <h3 className="mb-3">Enrollments</h3>
-
           <div
             className="card p-3 text-muted"
             style={{
@@ -187,7 +201,6 @@ setMsg("Coś poszło nie tak z /students")})
         {/* GPA */}
         <div>
           <h3 className="mb-3">GPA</h3>
-
           <div
             className="card p-3"
             style={{
